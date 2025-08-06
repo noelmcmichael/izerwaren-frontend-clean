@@ -21,7 +21,7 @@ import { CatalogSEO } from './CatalogSEO';
 import CategoryFilter from '../../../components/catalog/CategoryFilter';
 import { LoadingSpinner } from '../../../components/shared/LoadingSpinner';
 import { useToast } from '../../../components/shared/Toast';
-import { fetchShopifyProducts } from '../../../services/shopify-live';
+import { shopifyLiveService } from '../../../services/shopify-live';
 
 interface Product {
   id: string;
@@ -84,44 +84,33 @@ function CatalogContent() {
       setLoading(true);
       setError(null);
 
-      // Use Shopify live service directly
-      const response = await fetchShopifyProducts(page, 20, search, categoryFilter);
+      // Use Shopify live service directly - same method as catalog-live
+      const response = await shopifyLiveService.getProducts(page, 20, search, categoryFilter || undefined);
       
-      // Transform Shopify response to match expected format
-      const transformedProducts = response.products.map(product => ({
-        id: product.id,
+      // Transform Shopify response to match expected catalog format
+      const transformedProducts = response.data.map(product => ({
+        id: product.id.toString(),
         title: product.title,
         description: product.description,
-        sku: product.sku || product.id,
-        price: product.price,
-        availability: product.availability || 'In Stock',
-        categoryName: product.tags?.[0] || 'General',
-        images: product.images.map((img, index) => ({
-          id: `${product.id}-${index}`,
-          url: img.url,
-          altText: img.altText || product.title,
-          isPrimary: index === 0,
-        })),
+        sku: product.sku || product.id.toString(),
+        price: product.price ? `$${product.price.toFixed(2)}` : '$0.00',
+        availability: product.available_for_sale ? 'In Stock' : 'Out of Stock',
+        categoryName: product.category_name || 'General',
+        images: [{
+          id: `${product.id}-1`,
+          url: '/api/placeholder/400/300', // Safe placeholder for now
+          altText: product.title,
+          isPrimary: true,
+        }],
         shopifyVariants: [{
-          id: product.id,
+          id: product.shopify_id || product.id.toString(),
           sku: product.sku,
           inventoryQty: 100, // Placeholder
         }],
       }));
 
       setProducts(transformedProducts);
-      
-      // Create pagination based on response
-      const totalPages = Math.ceil(response.total / 20);
-      setPagination({
-        page,
-        limit: 20,
-        total: response.total,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPreviousPage: page > 1,
-      });
-      
+      setPagination(response.pagination);
       setCurrentPage(page);
     } catch (error) {
       console.error('Failed to load products:', error);
