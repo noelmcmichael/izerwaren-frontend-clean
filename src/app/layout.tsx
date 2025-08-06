@@ -5,6 +5,7 @@ import { SSRProvider } from '../providers/SSRProvider';
 import { MainHeader } from '../components/navigation/MainHeader';
 import { Footer } from '../components/navigation/Footer';
 import { PageErrorBoundary } from '../components/error-boundary';
+import { ToastProvider } from '../components/ui/Toast';
 // import ComparisonBar from './comparison/components/ComparisonBar'; // Temporarily disabled for production stability
 
 export const metadata: Metadata = {
@@ -41,10 +42,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <SSRProvider>
           <PageErrorBoundary>
-            <MainHeader />
-            {children}
-            <Footer />
-            {/* <ComparisonBar /> */} {/* Temporarily disabled for production stability */}
+            <ToastProvider>
+              <MainHeader />
+              {children}
+              <Footer />
+              {/* <ComparisonBar /> */} {/* Temporarily disabled for production stability */}
+            </ToastProvider>
           </PageErrorBoundary>
         </SSRProvider>
       </body>
