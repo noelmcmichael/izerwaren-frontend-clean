@@ -15,10 +15,12 @@ import {
   DollarSign,
   Hash,
   Building2,
-  Tag
+  Tag,
+  Eye,
+  ShoppingCart,
+  Loader2
 } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 
 import { shopifyLiveService } from '../../services/shopify-live';
 import { Product } from '../../lib/types';
@@ -130,61 +132,130 @@ export default function CatalogPage() {
     }
   };
 
-  const ProductCard = ({ product }: { product: Product }) => (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
-      <div className="aspect-w-16 aspect-h-12 bg-gray-200">
-        <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500">
-          <Package className="h-12 w-12" />
-        </div>
-      </div>
-      
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-          {product.title}
-        </h3>
-        
-        <div className="space-y-2 text-sm text-gray-600">
-          <div className="flex items-center gap-2">
-            <Building2 className="h-4 w-4 flex-shrink-0" />
-            <span className="truncate">{product.manufacturer}</span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Tag className="h-4 w-4 flex-shrink-0" />
-            <span className="truncate">{product.category_name}</span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4 flex-shrink-0" />
-            <span className="truncate">{product.display_price}</span>
-          </div>
-          
-          {product.sku && (
-            <div className="flex items-center gap-2">
-              <Hash className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate font-mono text-xs">{product.sku}</span>
+  const EnhancedProductCard = ({ product }: { product: Product }) => {
+    if (viewMode === 'list') {
+      return (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-blue-200">
+          <div className="flex flex-col md:flex-row">
+            <div className="md:w-48 h-48 md:h-32 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+              <Package className="h-12 w-12 text-gray-400" />
             </div>
-          )}
+            
+            <div className="flex-1 p-6">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between">
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                    {product.title}
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Building2 className="h-4 w-4 flex-shrink-0 text-blue-500" />
+                      <span className="truncate">{product.manufacturer}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Tag className="h-4 w-4 flex-shrink-0 text-green-500" />
+                      <span className="truncate">{product.category_name}</span>
+                    </div>
+                    
+                    {product.sku && (
+                      <div className="flex items-center gap-2">
+                        <Package className="h-4 w-4 flex-shrink-0 text-purple-500" />
+                        <span className="font-mono text-xs bg-purple-50 px-2 py-1 rounded-full text-purple-700 truncate">
+                          SKU: {product.sku}
+                        </span>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 flex-shrink-0 text-emerald-500" />
+                      <span className="font-bold text-emerald-600 text-lg">
+                        ${product.price?.toFixed(2) || product.display_price}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-2 mt-4 md:mt-0 md:ml-6">
+                  <button className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium">
+                    <Eye className="h-4 w-4" />
+                    View Details
+                  </button>
+                  <button className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200 text-sm font-medium">
+                    <ShoppingCart className="h-4 w-4" />
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:border-blue-200 hover:-translate-y-1">
+        <div className="aspect-w-16 aspect-h-12 bg-gradient-to-br from-gray-50 to-gray-100">
+          <div className="w-full h-48 flex items-center justify-center text-gray-400">
+            <Package className="h-16 w-16" />
+          </div>
         </div>
         
-        <button className="w-full mt-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-          View Details
-        </button>
+        <div className="p-5">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
+            {product.title}
+          </h3>
+          
+          <div className="space-y-3 text-sm mb-4">
+            <div className="flex items-center gap-2 text-gray-600">
+              <Building2 className="h-4 w-4 flex-shrink-0 text-blue-500" />
+              <span className="truncate font-medium">{product.manufacturer}</span>
+            </div>
+            
+            <div className="flex items-center gap-2 text-gray-600">
+              <Tag className="h-4 w-4 flex-shrink-0 text-green-500" />
+              <span className="truncate">{product.category_name}</span>
+            </div>
+            
+            {product.sku && (
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4 flex-shrink-0 text-purple-500" />
+                <span className="font-mono text-xs bg-purple-50 px-2 py-1 rounded-full text-purple-700 truncate">
+                  {product.sku}
+                </span>
+              </div>
+            )}
+            
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4 flex-shrink-0 text-emerald-500" />
+              <span className="font-bold text-emerald-600 text-xl">
+                ${product.price?.toFixed(2) || product.display_price}
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-3 border-t border-gray-100">
+            <button className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium">
+              <Eye className="h-4 w-4" />
+              View Details
+            </button>
+            <button className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200 text-sm font-medium">
+              <ShoppingCart className="h-4 w-4" />
+              Add to Cart
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-blue-500 hover:bg-blue-400 transition ease-in-out duration-150 cursor-not-allowed">
-            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Loading products...
-          </div>
+          <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-6" />
+          <p className="text-gray-600 text-xl font-medium">Loading enhanced catalog from Shopify...</p>
         </div>
       </div>
     );
@@ -209,41 +280,50 @@ export default function CatalogPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="bg-white shadow-lg border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Breadcrumb */}
           <div className="flex items-center text-sm text-gray-500 mb-4">
-            <Link href="/" className="hover:text-gray-700">
+            <Link href="/" className="hover:text-gray-700 cursor-pointer">
               Home
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-gray-900">Catalog</span>
+            <span className="text-gray-900 font-medium">Catalog</span>
           </div>
 
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Enhanced Marine Hardware Catalog
-                <span className="ml-2 text-sm font-normal text-red-600">🔴 LIVE</span>
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between">
+            <div className="mb-6 lg:mb-0">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                Marine Hardware Catalog
               </h1>
-              <p className="text-gray-600">
-                Real-time inventory from izerw-marine.myshopify.com
+              <p className="text-gray-600 text-lg flex items-center gap-2">
+                Browse our complete selection of marine hardware and supplies
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-600 text-xs font-semibold rounded-full">
+                  🔴 LIVE
+                </span>
               </p>
             </div>
-
-            <div className="flex items-center gap-2">
+            
+            {/* Connection Status */}
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 bg-white shadow-sm">
               {connectionStatus.isConnected ? (
-                <div className="flex items-center gap-2 text-green-600 text-sm">
-                  <CheckCircle className="h-4 w-4" />
-                  🔴 LIVE Connected
-                </div>
+                <>
+                  <CheckCircle className="h-6 w-6 text-green-500" />
+                  <div className="text-sm">
+                    <div className="text-green-600 font-semibold">🔴 LIVE Connected</div>
+                    <div className="text-gray-500">Real-time Shopify data</div>
+                  </div>
+                </>
               ) : (
-                <div className="flex items-center gap-2 text-red-600 text-sm">
-                  <XCircle className="h-4 w-4" />
-                  Disconnected
-                </div>
+                <>
+                  <XCircle className="h-6 w-6 text-red-500" />
+                  <div className="text-sm">
+                    <div className="text-red-600 font-semibold">Disconnected</div>
+                    <div className="text-gray-500">Unable to connect</div>
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -340,28 +420,15 @@ export default function CatalogPage() {
         ) : (
           <>
             {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <EnhancedProductCard key={product.id} product={product} />
                 ))}
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {products.map((product) => (
-                  <div key={product.id} className="bg-white rounded-lg shadow-md p-6 flex gap-6">
-                    <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Package className="h-8 w-8 text-gray-400" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.title}</h3>
-                      <div className="flex gap-6 text-sm text-gray-600">
-                        <span>Manufacturer: {product.manufacturer}</span>
-                        <span>Category: {product.category_name}</span>
-                        <span>Price: {product.display_price}</span>
-                        {product.sku && <span>SKU: {product.sku}</span>}
-                      </div>
-                    </div>
-                  </div>
+                  <EnhancedProductCard key={product.id} product={product} />
                 ))}
               </div>
             )}
