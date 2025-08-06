@@ -21,8 +21,7 @@ import { CatalogSEO } from './CatalogSEO';
 import CategoryFilter from '../../../components/catalog/CategoryFilter';
 import { LoadingSpinner } from '../../../components/shared/LoadingSpinner';
 import { useToast } from '../../../components/shared/Toast';
-import { apiClient } from '../../../lib/api-client';
-import { resilientProductService } from '../../../services/resilient-products';
+import { shopifyLiveService } from '../../../services/shopify-live';
 
 interface Product {
   id: string;
@@ -85,32 +84,33 @@ function CatalogContent() {
       setLoading(true);
       setError(null);
 
-      let data: ProductsResponse;
-
-      // Handle special categories
-      if (categoryFilter === 'VARIANT_PRODUCTS' || categoryFilter === 'PDF_PRODUCTS') {
-        data = await resilientProductService.getProductsByCategory(categoryFilter, page, 20);
-      } else {
-        // Regular products fetch with subcategory support
-        const category = categoryFilter && categoryFilter !== 'ALL' ? categoryFilter : undefined;
-        data = await resilientProductService.getProducts(
-          page,
-          20,
-          search,
-          category,
-          subCategoryFilter
-        );
-      }
-
-      // Transform products to match ProductCard interface
-      const transformedProducts = data.data.map(product => ({
-        ...product,
-        images: product.images || [],
-        shopifyVariants: product.shopifyVariants || [],
+      // Use Shopify live service directly - same method as catalog-live
+      const response = await shopifyLiveService.getProducts(page, 20, search, categoryFilter || undefined);
+      
+      // Transform Shopify response to match expected catalog format
+      const transformedProducts = response.data.map(product => ({
+        id: product.id.toString(),
+        title: product.title,
+        description: product.description,
+        sku: product.sku || product.id.toString(),
+        price: product.price ? `$${product.price.toFixed(2)}` : '$0.00',
+        availability: product.available_for_sale ? 'In Stock' : 'Out of Stock',
+        categoryName: product.category_name || 'General',
+        images: [{
+          id: `${product.id}-1`,
+          url: '/api/placeholder/400/300', // Safe placeholder for now
+          altText: product.title,
+          isPrimary: true,
+        }],
+        shopifyVariants: [{
+          id: product.shopify_id || product.id.toString(),
+          sku: product.sku,
+          inventoryQty: 100, // Placeholder
+        }],
       }));
 
       setProducts(transformedProducts);
-      setPagination(data.pagination);
+      setPagination(response.pagination);
       setCurrentPage(page);
     } catch (error) {
       console.error('Failed to load products:', error);
@@ -216,6 +216,9 @@ function CatalogContent() {
                 {category
                   ? `Browse our ${category.toLowerCase()} products`
                   : 'Browse our complete selection of marine hardware and supplies'}
+                <span className='ml-2 inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full'>
+                  🔴 LIVE
+                </span>
               </p>
             </div>
 
